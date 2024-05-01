@@ -170,6 +170,10 @@ class Program
         return image;
     }
     public static Bitmap golden_dragon_curve(int d, Bitmap image, vec2 startp, vec2 endp, int dir){
+        int cmax = 10000;
+        if(c>cmax){
+            return image;
+        }
         Pen pen = pens[d%20];
         pen.Width = 1;
         if(d>10){
@@ -180,7 +184,8 @@ class Program
         vec2 temp = endp + startp;
         graphics.DrawLine(pen, new PointF((float)startp.x, (float)startp.y), new PointF((float)temp.x, (float)temp.y));
 
-        if(d>0 && c < 10000){
+
+        if(d>0){
             if(dir == -1){
                 endp *= 0.74274*0.74274;
                 endp.rotate(46.98598225);
