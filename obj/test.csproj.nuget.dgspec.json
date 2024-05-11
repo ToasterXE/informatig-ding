@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\mrnon\\Desktop\\Projeggte\\c#\\test\\test.csproj": {}
+    "C:\\Users\\hd85w\\Documents\\Projeggte\\c#\\test\\brother-ew\\test.csproj": {}
   },
   "projects": {
-    "C:\\Users\\mrnon\\Desktop\\Projeggte\\c#\\test\\test.csproj": {
+    "C:\\Users\\hd85w\\Documents\\Projeggte\\c#\\test\\brother-ew\\test.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\mrnon\\Desktop\\Projeggte\\c#\\test\\test.csproj",
+        "projectUniqueName": "C:\\Users\\hd85w\\Documents\\Projeggte\\c#\\test\\brother-ew\\test.csproj",
         "projectName": "test",
-        "projectPath": "C:\\Users\\mrnon\\Desktop\\Projeggte\\c#\\test\\test.csproj",
-        "packagesPath": "C:\\Users\\mrnon\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\mrnon\\Desktop\\Projeggte\\c#\\test\\obj\\",
+        "projectPath": "C:\\Users\\hd85w\\Documents\\Projeggte\\c#\\test\\brother-ew\\test.csproj",
+        "packagesPath": "C:\\Users\\hd85w\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\hd85w\\Documents\\Projeggte\\c#\\test\\brother-ew\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\mrnon\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\hd85w\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -43,6 +43,14 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "FFMpegCore": {
+              "target": "Package",
+              "version": "[5.1.0, )"
+            },
+            "FFMpegCore.Extensions.System.Drawing.Common": {
+              "target": "Package",
+              "version": "[5.0.0, )"
+            },
             "System.Drawing.Common": {
               "target": "Package",
               "version": "[8.0.4, )"

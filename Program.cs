@@ -2,6 +2,9 @@
 using System.Diagnostics.Metrics;
 using System.Drawing;
 using System.Numerics;
+using FFMpegCore;
+using FFMpegCore.Pipes;
+using FFMpegCore.Extensions.System.Drawing.Common;
 using System.Security.AccessControl;
 using System.Security.Cryptography.X509Certificates;
 #pragma warning disable CA1416
@@ -13,6 +16,7 @@ class Program
                                 new Pen(Color.MediumVioletRed), new Pen(Color.Crimson)};
 
     public static long c = 0;
+    public static int width = 400, height = 400;
     public struct vec2{
         public vec2(double X, double Y){
             x = X;
@@ -100,7 +104,7 @@ class Program
         else{
             c+=1;
             Pen pen = pens[c%20];
-            pen.Width = 5;
+            pen.Width = 1;
             Graphics graphics = Graphics.FromImage(image);
             endp += startp;
             graphics.DrawLine(pen, new PointF((float)startp.x, (float)startp.y), new PointF((float)endp.x, (float)endp.y));
@@ -267,7 +271,7 @@ class Program
         while(elements.Any()){
             c += 1;
             if(c>maxc){break;}
-            vec2 startp = elements.First().Item1;
+            vec2 startp = elements.Peek().Item1;
             vec2 endp = elements.First().Item2;
             elements.Dequeue();
             vec2 temp = endp + startp;
@@ -275,31 +279,107 @@ class Program
         }
         return image;
     }
+    public static IEnumerable<BitmapVideoFrameWrapper> frames_sierpinski(int d, Bitmap image, vec2 startp, vec2 endp, int dir)
+    {
+        vec2 oendp = endp;
+        vec2 ostartp = startp;
+        Pen pen = pens[d%20];
+        pen.Width = 1;
+        Graphics graphics = Graphics.FromImage(image);
+        vec2 temp = endp + startp;
+        graphics.DrawLine(pen, new PointF((float)startp.x, (float)startp.y), new PointF((float)temp.x, (float)temp.y));
+        if(d > 0){
+            endp/=2;
+            endp.rotate(60.0*dir);
+            foreach(BitmapVideoFrameWrapper frame in frames_sierpinski(d-1, image, startp, endp, dir*-1)){
+                yield return frame;
+            }
+            
+            startp += endp;
+            endp.rotate(-60.0 * dir);
+            foreach(BitmapVideoFrameWrapper frame in frames_sierpinski(d-1, image, startp, endp, dir)){
+                yield return frame;
+            }
+            startp += endp;
+            endp.rotate(-60.0 * dir);
+            foreach(BitmapVideoFrameWrapper frame in frames_sierpinski(d-1, image, startp, endp, dir*-1)){
+                yield return frame;
+            }
+            Pen erase = new Pen(Color.Black);
+            erase.Width = 1;
+            endp = oendp;
+            startp = ostartp;
+            graphics.DrawLine(erase, new PointF((float)startp.x, (float)startp.y), new PointF((float)temp.x, (float)temp.y));
+        }
+        
+        // else{
+        //     c += 1;
+        //     Pen pen = pens[c%20];
+        //     pen.Width = 5;
+        //     Graphics graphics = Graphics.FromImage(image);
+        //     endp += startp;
+        //     graphics.DrawLine(pen, new PointF((float)startp.x, (float)startp.y), new PointF((float)endp.x, (float)endp.y));
+        // }
+        BitmapVideoFrameWrapper rimage = new(image);
+        yield return rimage;
+    }
+    public static IEnumerable<BitmapVideoFrameWrapper> CreateFramesSD(int count, int width, int height)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            // create a Bitmap
+            using Bitmap bmp = new(width, height);
+            using Graphics gfx = Graphics.FromImage(bmp);
+
+            // draw a blue background
+            gfx.Clear(Color.Navy);
+
+            // draw a growing green square
+            Point pt = new(i, i);
+            Size sz = new(i, i);
+            Rectangle rect = new(pt, sz);
+            gfx.FillRectangle(Brushes.Green, rect);
+
+            // draw some text
+            using Font fnt = new("consolas", 24);
+            gfx.DrawString($"Frame: {i + 1:N0}", fnt, Brushes.Yellow, 2, 2);
+
+            // yield the wrapped Bitmap
+            using BitmapVideoFrameWrapper wrappedBitmap = new(bmp);
+            yield return wrappedBitmap;
+        }
+    }
 
     static void Main()
     {
         // Create a blank image with a specified width and height
-        int width = 8001;
-        int height = 8001;
+        // int width = 16001;
+        // int height = 16001;
         Bitmap image = new Bitmap(width, height);
 
         // Create a graphics object from the image
         Graphics graphics = Graphics.FromImage(image);
         graphics.Clear(Color.Black);
         // Draw a red rectangle on the image
-        // image = sierpinski_triangle(10, image, new vec2(0.0,8000.0), new vec2(8000.0,0.0), -1);
-        // image = dragon_curve(8, image, new vec2(2000,4000), new vec2(4500,0), 1);
+        // image = sierpinski_triangle(5, image, new vec2(0, 16000.0), new vec2(16000,0), -1);
+        // image = dragon_curve(24, image, new vec2(3500,10000), new vec2(9000,-6500), 1);
         // image = levy_c(25,image, new vec2(3000,3000), new vec2(2000,0), 1);
         // image = levy_c(15,image, new vec2(2000,7000), new vec2(4000,0), -1);
-        image = golden_dragon_curve(19, image, new vec2(1500, 2000), new vec2(5000, 5000), 1);
+        // image = golden_dragon_curve(19, image, new vec2(1500, 2000), new vec2(5000, 5000), 1);
         // image = iterative_golden_dragon_curve(19, image, new vec2(1500, 2000), new vec2(5000, 5000));
         // Pen pen = new Pen(Color.Black);
         // Rectangle rectangle = new Rectangle(50, 50, 200, 100);
         // graphics.DrawRectangle(pen, rectangle);
         Console.WriteLine(c);
         // Save the image to a file
-        string filePath = "../../../image.jpg";
-        image.Save(filePath);
+        // string filePath = "./image.jpg";
+        // image.Save(filePath);
+
+        // var frames = CreateFramesSD(count: 200, width: 400, height: 300);
+        var frames = frames_sierpinski(5, image, new vec2(0,399), new vec2(399,0),-1);
+        RawVideoPipeSource source = new(frames) { FrameRate = 60};
+        bool success = FFMpegArguments.FromPipeInput(source).OutputToFile("output.webm", overwrite: true, options => options.WithVideoCodec("libvpx-vp9")).ProcessSynchronously();
+
 
         // Dispose of the graphics object and image
         graphics.Dispose();
