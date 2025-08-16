@@ -41,3 +41,6 @@ C:\Users\hd85w\Documents\Projeggte\c#\test\brother-ew\obj\Debug\net8.0\ref\test.
 C:\Users\hd85w\Documents\Projeggte\c#\test\brother-ew\bin\Debug\net8.0\FFMpegCore.dll
 C:\Users\hd85w\Documents\Projeggte\c#\test\brother-ew\bin\Debug\net8.0\FFMpegCore.Extensions.System.Drawing.Common.dll
 C:\Users\hd85w\Documents\Projeggte\c#\test\brother-ew\bin\Debug\net8.0\Instances.dll
+C:\Users\mrnon\Desktop\Projeggte\c#\test\bin\Debug\net8.0\FFMpegCore.dll
+C:\Users\mrnon\Desktop\Projeggte\c#\test\bin\Debug\net8.0\FFMpegCore.Extensions.System.Drawing.Common.dll
+C:\Users\mrnon\Desktop\Projeggte\c#\test\bin\Debug\net8.0\Instances.dll

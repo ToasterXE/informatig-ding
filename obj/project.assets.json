@@ -354,19 +354,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\hd85w\\.nuget\\packages\\": {}
+    "C:\\Users\\mrnon\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\hd85w\\Documents\\Projeggte\\c#\\test\\brother-ew\\test.csproj",
+      "projectUniqueName": "C:\\Users\\mrnon\\Desktop\\Projeggte\\c#\\test\\test.csproj",
       "projectName": "test",
-      "projectPath": "C:\\Users\\hd85w\\Documents\\Projeggte\\c#\\test\\brother-ew\\test.csproj",
-      "packagesPath": "C:\\Users\\hd85w\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\hd85w\\Documents\\Projeggte\\c#\\test\\brother-ew\\obj\\",
+      "projectPath": "C:\\Users\\mrnon\\Desktop\\Projeggte\\c#\\test\\test.csproj",
+      "packagesPath": "C:\\Users\\mrnon\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\mrnon\\Desktop\\Projeggte\\c#\\test\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\hd85w\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\mrnon\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"

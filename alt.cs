@@ -7,6 +7,8 @@ using FFMpegCore.Pipes;
 using FFMpegCore.Extensions.System.Drawing.Common;
 using System.Security.AccessControl;
 using System.Security.Cryptography.X509Certificates;
+using System.Net.Http.Json;
+using System.Runtime.Serialization;
 #pragma warning disable CA1416
 class Program
 {
@@ -16,7 +18,7 @@ class Program
                                 new Pen(Color.MediumVioletRed), new Pen(Color.Crimson)};
 
     public static long c = 0;
-    public static int width = 400, height = 400;
+    public static int width = 2000, height = 2000;
     public struct vec2{
         public vec2(double X, double Y){
             x = X;
@@ -279,12 +281,60 @@ class Program
         }
         return image;
     }
+
+    public static IEnumerable<BitmapVideoFrameWrapper> frames_sierpinski_iterative(int d, Bitmap image, vec2 startp, vec2 endp){
+        Queue<Tuple<Tuple<vec2, vec2>, int>> elements = new Queue<Tuple<Tuple<vec2, vec2>, int>>();
+        elements.Enqueue(new Tuple<Tuple<vec2, vec2>, int>(new Tuple<vec2, vec2>(startp, endp),-1));
+        Graphics graphics = Graphics.FromImage(image);
+        for(int i = 0; i<d; i++){
+            Pen pen = pens[i*2%20];
+            pen.Width = 5;
+            int s = elements.Count();
+
+            for(int j = 0; j<s; j++){
+            
+                startp = elements.First().Item1.Item1;
+                endp = elements.First().Item1.Item2;
+                int dir = elements.First().Item2;
+                elements.Dequeue();
+
+                if((j+2)< s && j%3 == 0){
+                    vec2 tempend = endp *2;
+                    tempend.rotate(60.0*dir);
+                    vec2 tempp = tempend+startp;
+                    graphics.DrawLine(new Pen(Color.Black, 5), new PointF((float)startp.x, (float)startp.y), new PointF((float)tempp.x, (float)tempp.y));
+                }
+
+                vec2 temp = endp + startp;
+                graphics.DrawLine(pen, new PointF((float)startp.x, (float)startp.y), new PointF((float)temp.x, (float)temp.y));
+                BitmapVideoFrameWrapper rimage = new(image);
+                yield return rimage;
+
+                endp /= 2;
+                endp.rotate(60.0*dir);
+                elements.Enqueue(new Tuple<Tuple<vec2, vec2>, int>( new Tuple<vec2, vec2>(startp, endp),dir*-1));
+                startp += endp;
+                endp.rotate(-60.0 * dir);
+                elements.Enqueue(new Tuple<Tuple<vec2, vec2>, int>( new Tuple<vec2, vec2>(startp, endp),dir));
+                startp += endp;
+                endp.rotate(-60.0 * dir);
+                elements.Enqueue(new Tuple<Tuple<vec2, vec2>, int>( new Tuple<vec2, vec2>(startp, endp),dir*-1));
+            
+            }
+
+
+        }
+
+
+    }
+
+
     public static IEnumerable<BitmapVideoFrameWrapper> frames_sierpinski(int d, Bitmap image, vec2 startp, vec2 endp, int dir)
     {
         vec2 oendp = endp;
         vec2 ostartp = startp;
-        Pen pen = pens[d%20];
-        pen.Width = 1;
+        Pen pen = pens[19-((d*2)%20)];
+        pen.Width = 5;
         Graphics graphics = Graphics.FromImage(image);
         vec2 temp = endp + startp;
         graphics.DrawLine(pen, new PointF((float)startp.x, (float)startp.y), new PointF((float)temp.x, (float)temp.y));
@@ -306,10 +356,47 @@ class Program
                 yield return frame;
             }
             Pen erase = new Pen(Color.Black);
-            erase.Width = 1;
+            erase.Width = 5;
             endp = oendp;
             startp = ostartp;
             graphics.DrawLine(erase, new PointF((float)startp.x, (float)startp.y), new PointF((float)temp.x, (float)temp.y));
+            endp/=2;
+            endp.rotate(60.0*dir);
+            var f1 = frames_sierpinski(d-1, image, startp, endp, dir*-1);
+            int c1 = f1.Count();
+            int cc1 = 0;
+            foreach(BitmapVideoFrameWrapper frame in f1){
+                cc1++;
+                if(cc1 == c1){
+                    yield return frame;
+                }
+            }
+
+            startp += endp;
+            endp.rotate(-60.0 * dir);
+            f1 = frames_sierpinski(d-1, image, startp, endp, dir);
+            c1 = f1.Count();
+            cc1 = 0;
+            foreach(BitmapVideoFrameWrapper frame in f1){
+                cc1++;
+                if(cc1 == c1){
+                    yield return frame;
+                }
+            }
+
+            startp += endp;
+            endp.rotate(-60.0 * dir);
+            f1 = frames_sierpinski(d-1, image, startp, endp, dir*-1);
+            
+            c1 = f1.Count();
+            cc1 = 0;
+            foreach(BitmapVideoFrameWrapper frame in f1){
+                cc1++;
+                if(cc1 == c1){
+                    yield return frame;
+                }
+            }
+
         }
         
         // else{
@@ -350,6 +437,64 @@ class Program
         }
     }
 
+    public static Color color_mandelbrot(int d, double zx, double zy, double cx, double cy){
+        if(d > 2000){
+            return Color.Black;
+        }
+        if(zx*zx + zy*zy >= 2*2){
+            return pens[(d/100)%20].Color;
+        }
+        return color_mandelbrot(d+1, zx*zx-zy*zy+cx, 2*zx*zy+cy, cx, cy);
+    }
+
+    public static Bitmap mandelbrotset(Bitmap image){
+        float cx = 0, cy = 0;
+        for(int i = 0; i<width; i++){
+            // cx =  ((i/width) * 2.48) - 2;
+            cx = (float)i/width;
+            cx *= (float)2.48/8192;   ///1
+            cx -= (float)0.9884;      //2
+            for(int j = 0; j<(int)height*(float)(2.25/2.48); j++){
+                cy = (float)j/height;
+                cy *= (float)2.25/8192;    ///1
+                cy -= (float)0.2511;       //1.12
+                image.SetPixel(i,j, color_mandelbrot(0,0,0,cx,cy));
+            }
+        }
+        
+        
+        return image;
+    }
+
+
+    public static Color color_julia(int d, double zx, double zy, double cx, double cy){
+        if(d > 500){
+            return Color.Black;
+        }
+        if(zx*zx + zy*zy >= 2*2){
+            return pens[19-((d/2)%20)].Color;
+        }
+        return color_julia(d+1, zx*zx-zy*zy+cx, 2*zx*zy+cy, cx, cy);
+    }
+
+    public static Bitmap juliaset(Bitmap image, float cx1 = 0, float cy1 = 0){
+        float cx = 0, cy = 0;
+        for(int i = 0; i<width; i++){
+            // cx =  ((i/width) * 2.48) - 2;
+            cx = (float)i/width;
+            cx *= (float)3.8/1;   ///1
+            cx -= (float)1.9;      //2
+            for(int j = 0; j<(int)height*(float)(10/10); j++){
+                cy = (float)j/height;
+                cy *= (float)3.8/1;    ///1
+                cy -= (float)1.9;       //1.12
+                image.SetPixel(i,j, color_julia(0,cx,cy,cx1,cy1));
+            }
+        }
+
+
+        return image;
+    }
     static void Main()
     {
         // Create a blank image with a specified width and height
@@ -361,6 +506,19 @@ class Program
         Graphics graphics = Graphics.FromImage(image);
         graphics.Clear(Color.Black);
         // Draw a red rectangle on the image
+        // image = mandelbrotset(image);
+
+        // for(float i = -1; i<1; i +=  (float)0.1){
+        //     for(float j = (float)-1.4; j<0.6; j += (float)0.1){
+        //         image = new Bitmap(width, height);
+        //         image = juliaset(image,i,j);
+        //         string path = "../../../image"+Convert.ToString(i)+"_"+Convert.ToString(j)+".jpg";
+        //         image.Save(path);
+        //     }
+        // }
+
+        // image = juliaset(image, (float)-0.8, (float)-0.2);
+
         // image = sierpinski_triangle(5, image, new vec2(0, 16000.0), new vec2(16000,0), -1);
         // image = dragon_curve(24, image, new vec2(3500,10000), new vec2(9000,-6500), 1);
         // image = levy_c(25,image, new vec2(3000,3000), new vec2(2000,0), 1);
@@ -372,13 +530,14 @@ class Program
         // graphics.DrawRectangle(pen, rectangle);
         Console.WriteLine(c);
         // Save the image to a file
-        // string filePath = "./image.jpg";
+        // string filePath = "../../../image.jpg";
         // image.Save(filePath);
 
         // var frames = CreateFramesSD(count: 200, width: 400, height: 300);
-        var frames = frames_sierpinski(5, image, new vec2(0,399), new vec2(399,0),-1);
-        RawVideoPipeSource source = new(frames) { FrameRate = 60};
-        bool success = FFMpegArguments.FromPipeInput(source).OutputToFile("output.webm", overwrite: true, options => options.WithVideoCodec("libvpx-vp9")).ProcessSynchronously();
+        var frames = frames_sierpinski(6, image, new vec2(0,width-1), new vec2(height-1,0),-1);
+        // var frames = frames_sierpinski_iterative(7, image, new vec2(0, width-1), new vec2(height-1,0));
+        RawVideoPipeSource source = new(frames) { FrameRate = 40};
+        bool success = FFMpegArguments.FromPipeInput(source).OutputToFile("../../../outputee.webm", overwrite: true, options => options.WithVideoCodec("libvpx-vp9")).ProcessSynchronously();
 
 
         // Dispose of the graphics object and image
